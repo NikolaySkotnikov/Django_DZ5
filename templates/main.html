@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-row flex-wrap">
+        <div class="text-center flex-fill h-100">
+            <h3 class="my-3">Последние посты</h3>
+            {% for post in last_posts %}
+            {% include 'blog_app/post_preview_include.html' %}
+            {% endfor %}
+        </div>
+        <div class="text-center flex-fill h-100">
+            <h3 class="my-3">Популярные посты</h3>
+            {% for post in popular_posts %}
+            {% include 'blog_app/post_preview_include.html' %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

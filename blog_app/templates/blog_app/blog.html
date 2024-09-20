@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Блог{% endblock %}
+{% block content %}
+<div class="conteiner-fluid text-center p-3">
+    <h3>Каталог постов</h3>
+    {% for post in page_obj %}
+    {% include 'blog_app/post_preview_include.html' %}
+    {% endfor %}
+</div>
+<nav aria-label="Пагинатор">
+    <ul class="pagination justify-content-center pagination-md">
+        {% for page in page_obj.paginator.page_range %}
+        <li class="page-item
+        {% if page_obj.number == page %}
+        active
+        {% else %}
+        {% endif %}"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+        {% endfor %}
+    </ul>
+  </nav>
+{% endblock %}

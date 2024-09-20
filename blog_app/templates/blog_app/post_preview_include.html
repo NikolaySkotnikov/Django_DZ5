@@ -1,0 +1,7 @@
+<div class="card mb-1 w-75 mx-auto">
+    <div class="card-body h-100">
+      <h5 class="card-title">{{ post.title }}</h5>
+      <p class="card-text">Количество просмотров: {{ post.views }} | Количество лайков: {{ post.likes }}</p>
+      <a href="{% url 'post_by_slug' post.slug %}" class="btn btn-primary">Подробнее</a>
+    </div>
+  </div>
