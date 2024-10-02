@@ -1,9 +1,7 @@
-from lib2to3.fixes.fix_input import context
-
 from django.core.paginator import Paginator
-from django.http import HttpResponse
 from django.shortcuts import render
 from .dataset import dataset
+from .models import Post
 
 menu = [
     {"name": "Главная", "alias": "main"},
@@ -12,16 +10,13 @@ menu = [
 ]
 
 
-def data_sort(x):
-    return x['views']
-
 def index(request):
 
     context = {
         'menu': menu,
         'page_alias': 'main',
-        'last_posts': dataset[-3:],
-        'popular_posts': sorted(dataset, key=data_sort, reverse=True)[:3],
+        'last_posts': Post.objects.all().order_by('-published_date')[:3],
+        'popular_posts': Post.objects.all().order_by('-views')[:3],
     }
 
     return render(request, 'main.html', context=context)
@@ -29,7 +24,6 @@ def index(request):
 
 def about(request):
     context = {
-        'posts': dataset,
         'menu': menu,
         'page_alias': 'about',
     }
@@ -38,12 +32,14 @@ def about(request):
 
 def blog(request):
 
-    paginator = Paginator(dataset, 3)
+    posts = Post.objects.all()
+
+    paginator = Paginator(posts, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'posts': dataset,
+        'posts': posts,
         'menu': menu,
         'page_alias': 'blog',
         'page_obj': page_obj,
@@ -52,5 +48,9 @@ def blog(request):
 
 
 def post_by_slug(request, post_slug):
-    post = [post for post in dataset if post['slug'] == post_slug]
-    return render(request, 'blog_app/post_detail.html', context={'post':post[0], 'menu': menu})
+
+    post = Post.objects.get(slug=post_slug)
+    context = {'post': post,
+               'menu': menu}
+
+    return render(request, 'blog_app/post_detail.html', context=context)

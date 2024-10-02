@@ -3,18 +3,21 @@
 {% block content %}
 <div class="conteiner-fluid">
     <div class="row text-center my-3 w-75 mx-auto">
-        <h2>{{ post.title}}</h2>
+        <h2>{{ post.title }}</h2>
     </div>
     <div class="row my-3 w-75 mx-auto fs-3">
-        <p>{{ post.post }}</p>
+        <p>{{ post.text }}</p>
         <span>Количество просмотров: <strong>{{ post.views }}</strong></span>
-        <span>Количество лайков: <strong>{{ post.likes }}</strong></span>
+        <span>Автор: <strong>{{ post.author }}</strong></span>
+        <span>Дата публикации: <strong>{{ post.published_date }}</strong></span>
+        <span>Категория: <strong>{{ post.data.category }}</strong></span>
+
     </div>
 
     <div class="row text-center my-3 w-75 mx-auto">
         <h2>Теги:</h2>
         <div class="d-flex flex-row justify-content-center fs-3">
-        {% for hashteg in post.hashtags %}
+        {% for hashteg in post.data.tags %}
         <div class="mx-4 px-3 border border-black rounded-2">
             <span>#{{ hashteg }}</span>
         </div>
@@ -22,16 +25,5 @@
         </div>
     </div>
 
-    <div class="row text-center my-3 w-75 mx-auto">
-        <h2>Комментарии:</h2>
-    </div>
-    <div class="row my-3 w-75 mx-auto fs-3">
-        {% for comment in post.comments%}
-        <hr>
-        <h3 class="text-capitalize">{{ comment.username }}:</h3>
-        <p>{{ comment.text }}</p>
-        <hr>
-        {% endfor %}
-    </div>
 </div>
 {% endblock%}
