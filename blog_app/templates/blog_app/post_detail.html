@@ -1,7 +1,7 @@
 {% extends 'base.html '%}
 {% block title %}Подробнее{% endblock %}
 {% block content %}
-<div class="conteiner-fluid">
+<div class="conteiner-fluid mb-4">
     <div class="row text-center my-3 w-75 mx-auto">
         <h2>{{ post.title }}</h2>
     </div>
@@ -24,6 +24,16 @@
         {% endfor %}
         </div>
     </div>
-
+    
+    <div class="row text-center my-3 w-75 mx-auto">
+        <h2>Комментарии:</h2>
+        {% if comments %}
+            {% for comment in comments %}
+                {% include 'blog_app/comment_include.html' %}
+            {% endfor %}
+        {% else %}
+            <p>Комментариев нет</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock%}

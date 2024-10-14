@@ -94,7 +94,7 @@ class Comment(models.Model):
     author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор')
     text = models.TextField(max_length=2000, verbose_name='Текст комментария')
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default='unchecked')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name='Пост')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, verbose_name='Пост', related_name='comments')
     created_data = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_date = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 

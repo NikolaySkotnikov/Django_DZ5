@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}Блог{% endblock %}
 {% block content %}
+
+
+
 <div class="container">
     <h3 class="text-center my-3">Каталог постов</h3>
+    {% include 'blog_app/search_form.html' %}
     <div class="row">
         {% for post in page_obj %}
             {% if post.status == 'published' %}
@@ -15,7 +19,7 @@
 </div>
 {% if page_obj.has_other_pages %}
 <nav aria-label="Пагинатор">
-    <ul class="pagination justify-content-center pagination-md">
+    <ul class="pagination justify-content-center pagination-md mb-4">
         {% for page in page_obj.paginator.page_range %}
         <li class="page-item
         {% if page_obj.number == page %}
