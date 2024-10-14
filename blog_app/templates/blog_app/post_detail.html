@@ -10,16 +10,16 @@
         <span>Количество просмотров: <strong>{{ post.views }}</strong></span>
         <span>Автор: <strong>{{ post.author }}</strong></span>
         <span>Дата публикации: <strong>{{ post.published_date }}</strong></span>
-        <span>Категория: <strong>{{ post.data.category }}</strong></span>
+        <span>Категория: <strong>{{ post.category }}</strong></span>
 
     </div>
 
     <div class="row text-center my-3 w-75 mx-auto">
         <h2>Теги:</h2>
         <div class="d-flex flex-row justify-content-center fs-3">
-        {% for hashteg in post.data.tags %}
+        {% for hashteg in post.tags.all %}
         <div class="mx-4 px-3 border border-black rounded-2">
-            <span>#{{ hashteg }}</span>
+            <a href="{{ hashteg.get_absolute_url }}">#{{ hashteg.name }}</a>
         </div>
         {% endfor %}
         </div>

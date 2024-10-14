@@ -1,8 +1,33 @@
-<div class="card mb-1 w-75 mx-auto">
-    <div class="card-body h-100">
-      <h5 class="card-title">{{ post.title }}</h5>
-        <p class="card-text">Автор: {{ post.author }}</p>
-        <p class="card-text">Количество просмотров: {{ post.views }}</p>
-      <a href="{{ post.get_absolute_url }}" class="btn btn-primary">Подробнее</a>
+{% load static %}
+<div class="card mb-3 h-100">
+  <div class="row g-0">
+    <div class="col-md-4 d-flex align-items-center justify-content-center p-2">
+      {% if post.cover_image %}
+        <img src="{{ post.cover_image.url }}" class="img-fluid rounded-start" style="width: 150px;"alt="{{ post.title }}">
+      {% else %}
+        <img src="{% static 'images/no_image.png' %}" class="img-fluid rounded-start" style="width: 150px;" alt="Без изображения">
+      {% endif %}
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+        <h5 class="card-title">{{ post.title }}</h5>
+        <p class="card-text my-2">Категория: 
+          {% if post.category %}
+          <a href="{{ post.category.get_absolute_url }}">{{ post.category }}</a>
+          {% else %}
+            Без категории
+          {% endif %}
+        </p>
+        <p class="card-text my-2">Автор: {{ post.author }}</p>
+        <p class="card-text my-2">Количество просмотров: {{ post.views }}</p>
+        <p class="card-text my-2">Теги: 
+          {% for hashteg in post.tags.all %}
+            <a href="{{ hashteg.get_absolute_url }}"><span class="badge bg-primary">#{{ hashteg.name }}</span></a>
+          {% endfor %}
+        </p>
+        <p class="card-text my-2"><small>Дата публикации: {{ post.published_date }}</small></p>
+        <a href="{{ post.get_absolute_url }}" class="btn btn-primary">Подробнее</a>
+      </div>
     </div>
   </div>
+</div>
