@@ -1,6 +1,20 @@
-<form action="{% url 'blog' %}" method="get" class="mb-4">
-    <div class="input-group">
+<form action="{% url 'blog' %}" method="get" class="mb-3">
+    <div class="input-group mb-2">
         <input type="text" class="form-control" name="search" placeholder="Поис по постам">
         <button type="submit" class="btn btn-primary"><i class="bi bi-search mr-4"></i> Поиск</button>
+    </div>
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center">
+        <div class="form-check me-sm-4 mb-2 mb-sm-0">
+            <input class="form-check-input" type="checkbox" name="search_category" id="searchCategory">
+            <label class="form-check-label" for="searchCategory">
+                <i class="bi bi-tags me-1 text-warning"></i> Поиск по категории
+            </label>
+        </div>
+        <div class="form-check me-sm-4 mb-2 mb-sm-0">
+            <input class="form-check-input" type="checkbox" name="search_tag" id="searchTag">
+            <label class="form-check-label" for="searchTag">
+                <i class="bi bi-hash me-1 text-success"></i> Поиск по тегу
+            </label>
+        </div>
     </div>
 </form>

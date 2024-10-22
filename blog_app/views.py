@@ -15,8 +15,10 @@ def index(request):
     context = {
         'menu': menu,
         'page_alias': 'main',
-        'last_posts': Post.objects.filter(status='published').order_by('-published_date')[:3],
-        'popular_posts': Post.objects.filter(status='published').order_by('-views')[:3],
+        'last_posts': Post.objects.select_related('author', 'category').prefetch_related('tags').
+                      filter(status='published').order_by('-published_date')[:3],
+        'popular_posts': Post.objects.select_related('author', 'category').prefetch_related('tags').
+                         filter(status='published').order_by('-views')[:3],
     }
 
     return render(request, 'main.html', context=context)
@@ -33,14 +35,24 @@ def about(request):
 def blog(request):
 
     search_query = request.GET.get('search', '')
+    search_category = request.GET.get('search_category')
+    search_tag = request.GET.get('search_tag')
+    page_number = request.GET.get('page')
+
+    posts = Post.objects.select_related('author', 'category').prefetch_related('tags').filter(status='published')
 
     if search_query:
-        posts = (Post.objects.filter(Q(text__icontains=search_query) | Q(title__icontains=search_query)).filter(status='published'))
-    else:
-        posts = Post.objects.filter(status='published')
+        query = Q(text__icontains=search_query) | Q(title__icontains=search_query)
+        if search_category:
+            query |= Q(category__name__icontains=search_query)
+        if search_tag:
+            query |= Q(tags__name__icontains=search_query)
+
+        posts = posts.filter(query)
+
+    posts = posts.distinct().order_by('-published_date')
 
     paginator = Paginator(posts, 4)
-    page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
@@ -53,7 +65,7 @@ def blog(request):
 
 def post_by_slug(request, post_slug):
 
-    post = Post.objects.get(slug=post_slug)
+    post = Post.objects.select_related('author', 'category').prefetch_related('tags').get(slug=post_slug)
     Post.objects.filter(slug=post_slug).update(views=F('views') + 1)
     comments = Comment.objects.filter(post=post.id)
 
@@ -66,7 +78,8 @@ def post_by_slug(request, post_slug):
 
 def posts_by_tag(request, tag_slug):
 
-    posts = Post.objects.filter(tags__slug=tag_slug).filter(status='published')
+    posts = (Post.objects.select_related('author', 'category').prefetch_related('tags').
+             filter(tags__slug=tag_slug).filter(status='published'))
 
     paginator = Paginator(posts, 4)
     page_number = request.GET.get('page')
@@ -82,7 +95,8 @@ def posts_by_tag(request, tag_slug):
 
 def posts_by_category(request, category_slug):
 
-    posts = Post.objects.filter(category__slug=category_slug).filter(status='published')
+    posts = (Post.objects.select_related('author', 'category').prefetch_related('tags').
+             filter(category__slug=category_slug).filter(status='published'))
 
     paginator = Paginator(posts, 4)
     page_number = request.GET.get('page')

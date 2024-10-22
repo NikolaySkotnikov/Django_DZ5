@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -29,6 +30,10 @@ class Post(models.Model):
         slug = slugify(unidecode(self.title))
         self.slug = slug
         super().save(*args, **kwargs)
+
+        cache.delete(f'post_preview_include {self.id}')
+        cache.delete(f'post_detail {self.id}')
+        cache.delete('blog_post_list')
 
     def __str__(self):
         return self.title

@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
+{% load cache %}
 {% block title %}Главная{% endblock %}
 {% block content %}
-<div class="container mb-5">
+{% cache 600 main_page %}
+<div class="container mb-1">
     <div class="d-flex flex-row flex-wrap">
         <div class="flex-fill mx-4 mb-2 h-25">
             <h3 class="my-3 text-center">Последние посты</h3>
@@ -17,4 +19,5 @@
         </div>
     </div>
 </div>
+{% endcache %}
 {% endblock %}

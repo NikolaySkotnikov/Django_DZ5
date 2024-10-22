@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
+{% load cache %}
 {% block title %}Блог{% endblock %}
 {% block content %}
-
-
 
 <div class="container">
     <h3 class="text-center my-3">Каталог постов</h3>
     {% include 'blog_app/search_form.html' %}
+    {% cache 300 blog_post_list page_obj.number %}
     <div class="row">
         {% for post in page_obj %}
             {% if post.status == 'published' %}
@@ -16,10 +16,11 @@
             {% endif %}
         {% endfor %}
     </div>
+    {% endcache %}
 </div>
 {% if page_obj.has_other_pages %}
-<nav aria-label="Пагинатор">
-    <ul class="pagination justify-content-center pagination-md mb-4">
+<nav aria-label="Пагинатор" class="mb-4">
+    <ul class="pagination justify-content-center pagination-md">
         {% for page in page_obj.paginator.page_range %}
         <li class="page-item
         {% if page_obj.number == page %}

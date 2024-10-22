@@ -1,4 +1,6 @@
 {% load static %}
+{% load cache %}
+{% cache 60 post_preview_include post.id %}
 <div class="card mb-3 h-100">
   <div class="row g-0">
     <div class="col-md-4 d-flex align-items-center justify-content-center p-2">
@@ -31,3 +33,4 @@
     </div>
   </div>
 </div>
+{% endcache %}
