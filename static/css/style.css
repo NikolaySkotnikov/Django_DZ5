@@ -1,5 +1,5 @@
 body {
-    background-color: AliceBlue;
+    background-color: rgba(233, 233, 233, 0.808);
 }
 html, body {
     height: 100%;
@@ -13,4 +13,33 @@ main {
 footer {
     color: rgb(165, 165, 165);
     text-align: center;
+}
+a.page-link {
+    background-color: #6a6b6b;
+    color: #fff;
+    border-color: #212529;
+}
+a.page-link:hover {
+    background-color: #535353;
+    color: #fff;
+    border-color: #212529;
+}
+a.page-link.active {
+    background-color: #212529;
+    color: #fff;
+    border-color: #212529;
+}
+.btn.btn-primary {
+    background-color: #212529;
+    color: #fff;
+    border-color: #212529;
+}
+.btn.btn-primary:hover {
+    background-color: #535353;
+    color: #fff;
+    border-color: #212529;
+}
+span.badge {
+    background-color: #212529;
+    color: #fff;
 }

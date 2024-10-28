@@ -65,7 +65,7 @@ def blog(request):
 
 def post_by_slug(request, post_slug):
 
-    post = Post.objects.select_related('author', 'category').prefetch_related('tags').get(slug=post_slug)
+    post = Post.objects.get(slug=post_slug)
     Post.objects.filter(slug=post_slug).update(views=F('views') + 1)
     comments = Comment.objects.filter(post=post.id)
 
@@ -78,8 +78,7 @@ def post_by_slug(request, post_slug):
 
 def posts_by_tag(request, tag_slug):
 
-    posts = (Post.objects.select_related('author', 'category').prefetch_related('tags').
-             filter(tags__slug=tag_slug).filter(status='published'))
+    posts = Post.objects.filter(tags__slug=tag_slug).filter(status='published')
 
     paginator = Paginator(posts, 4)
     page_number = request.GET.get('page')

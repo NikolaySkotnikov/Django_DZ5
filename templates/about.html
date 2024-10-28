@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% load cache %}
+<!-- {% load cache %} -->
 {% block title %}О проекте{% endblock %}
 {% block content %}
-{% cache 3600 about_page %}
+<!-- {% cache 3600 about_page %} -->
 <div class="conteiner-fluid mt-5">
     <div class="row my-3 w-75 mx-auto fs-3 ">
         <h2 class="text-center mb-4">Ваш Путеводитель в Мир Программирования</h2>
@@ -11,5 +11,5 @@
         <p>Каждая статья будет включать примеры кода, рекомендации по лучшим практикам, а также ссылки на курсы и книги, чтобы помочь вам углубить свои знания. Присоединяйтесь к нашему сообществу любителей Python, чтобы делиться опытом и находить вдохновение в мире программирования!</p>
     </div>
 </div>
-{% endcache %}
+<!-- {% endcache %} -->
 {% endblock%}

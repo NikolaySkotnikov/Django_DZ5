@@ -2,7 +2,7 @@
 {% load cache %}
 {% block title %}Главная{% endblock %}
 {% block content %}
-{% cache 600 main_page %}
+<!-- {% cache 600 main_page %} -->
 <div class="container mb-1">
     <div class="d-flex flex-row flex-wrap">
         <div class="flex-fill mx-4 mb-2 h-25">
@@ -19,5 +19,5 @@
         </div>
     </div>
 </div>
-{% endcache %}
+<!-- {% endcache %} -->
 {% endblock %}
