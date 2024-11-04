@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'debug_toolbar',
     'blog_app',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'users.context_processors.get_menu',
             ],
         },
     },
@@ -126,3 +128,6 @@ INTERNAL_IPS = [
        '127.0.0.1',
        'localhost',
    ]
+
+LOGIN_REDIRECT_URL = 'main'
+LOGIN_URL = 'login'

@@ -1,12 +1,15 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F, Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from .forms import PostForm, CommentForm
 from .models import Post, Comment
 
 menu = [
     {"name": "Главная", "alias": "main"},
     {"name": "Блог", "alias": "blog"},
     {"name": "О проекте", "alias": "about"},
+    {"name": "Добавить пост", "alias": "add_post"}
 ]
 
 
@@ -64,15 +67,32 @@ def blog(request):
 
 
 def post_by_slug(request, post_slug):
+    page_number = request.GET.get('page')
 
     post = Post.objects.get(slug=post_slug)
     Post.objects.filter(slug=post_slug).update(views=F('views') + 1)
-    comments = Comment.objects.filter(post=post.id)
+    comments = Comment.objects.filter(post=post.id).filter(status='accept')
+
+    paginator = Paginator(comments, 2)
+    page_obj = paginator.get_page(page_number)
 
     context = {'post': post,
                'menu': menu,
+               'page_obj': page_obj,
                'comments': comments}
 
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            context['form'] = form
+            return render(request, 'blog_app/post_detail.html', context=context)
+    else:
+        form = CommentForm()
+        context['form'] = form
     return render(request, 'blog_app/post_detail.html', context=context)
 
 
@@ -107,3 +127,28 @@ def posts_by_category(request, category_slug):
         'page_alias': 'blog'}
 
     return render(request, 'blog_app/blog.html', context=context)
+
+
+@login_required
+def add_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save(commit=True, author=request.user)
+            return redirect('blog')
+    else:
+        form = PostForm()
+    return render(request, 'blog_app/add_post.html', {'form': form, 'menu': menu, 'page_alias': 'add_post'})
+
+
+def update_post(request, post_slug):
+    post = Post.objects.get(slug=post_slug)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect('post_by_slug', post_slug=post_slug)
+    else:
+        form = PostForm(instance=post)
+    return render(request, 'blog_app/add_post.html', {'form': form, 'menu':menu})
