@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
-from blog_app.views import index, about
+from blog_app.views import Index, About
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index, name='main'),
-    path('about/', about, name='about'),
+    path('', Index.as_view(), name='main'),
+    path('about/', About.as_view(), name='about'),
     path('blog/', include('blog_app.urls')),
     path('users/', include('users.urls')),
 ]

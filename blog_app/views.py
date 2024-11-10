@@ -1,7 +1,11 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import F, Q
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView
+
 from .forms import PostForm, CommentForm
 from .models import Post, Comment
 
@@ -13,142 +17,151 @@ menu = [
 ]
 
 
-def index(request):
+class Index(TemplateView):
+    template_name = 'main.html'
 
-    context = {
-        'menu': menu,
-        'page_alias': 'main',
-        'last_posts': Post.objects.select_related('author', 'category').prefetch_related('tags').
-                      filter(status='published').order_by('-published_date')[:3],
-        'popular_posts': Post.objects.select_related('author', 'category').prefetch_related('tags').
-                         filter(status='published').order_by('-views')[:3],
-    }
-
-    return render(request, 'main.html', context=context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_alias'] = 'main'
+        context['last_posts'] = Post.objects.select_related('author', 'category').prefetch_related('tags').filter(status='published').order_by('-published_date')[:3]
+        context['popular_posts'] = Post.objects.select_related('author', 'category').prefetch_related('tags').filter(status='published').order_by('-views')[:3]
+        return context
 
 
-def about(request):
-    context = {
-        'menu': menu,
-        'page_alias': 'about',
-    }
-    return render(request, 'about.html', context=context)
+class About(TemplateView):
+    template_name = 'about.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_alias'] = 'about'
+        return context
 
 
-def blog(request):
+class Blog(ListView):
+    model = Post
+    template_name = 'blog_app/blog.html'
+    context_object_name = 'posts'
+    paginate_by = 4
 
-    search_query = request.GET.get('search', '')
-    search_category = request.GET.get('search_category')
-    search_tag = request.GET.get('search_tag')
-    page_number = request.GET.get('page')
+    def get_queryset(self):
 
-    posts = Post.objects.select_related('author', 'category').prefetch_related('tags').filter(status='published')
+        queryset = Post.objects.select_related('author', 'category').prefetch_related('tags').filter(status='published')
 
-    if search_query:
-        query = Q(text__icontains=search_query) | Q(title__icontains=search_query)
-        if search_category:
-            query |= Q(category__name__icontains=search_query)
-        if search_tag:
-            query |= Q(tags__name__icontains=search_query)
+        search_query = self.request.GET.get('search', '')
+        search_category = self.request.GET.get('search_category')
+        search_tag = self.request.GET.get('search_tag')
 
-        posts = posts.filter(query)
+        if search_query:
+            query = Q(text__icontains=search_query) | Q(title__icontains=search_query)
+            if search_category:
+                query |= Q(category__name__icontains=search_query)
+            if search_tag:
+                query |= Q(tags__name__icontains=search_query)
 
-    posts = posts.distinct().order_by('-published_date')
+            queryset = queryset.filter(query)
 
-    paginator = Paginator(posts, 4)
-    page_obj = paginator.get_page(page_number)
+        return queryset.distinct().order_by('-published_date')
 
-    context = {
-        'menu': menu,
-        'page_alias': 'blog',
-        'page_obj': page_obj,
-    }
-    return render(request, 'blog_app/blog.html', context=context)
+    def get_context_data(self, **kwargs):
+        contex = super().get_context_data(**kwargs)
+        contex['page_alias'] = 'blog'
+        return contex
 
 
-def post_by_slug(request, post_slug):
-    page_number = request.GET.get('page')
+class PostBySlug(DetailView):
+    model = Post
+    template_name = 'blog_app/post_detail.html'
+    slug_url_kwarg = 'post_slug'
+    context_object_name = 'post'
 
-    post = Post.objects.get(slug=post_slug)
-    Post.objects.filter(slug=post_slug).update(views=F('views') + 1)
-    comments = Comment.objects.filter(post=post.id).filter(status='accept')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
 
-    paginator = Paginator(comments, 2)
-    page_obj = paginator.get_page(page_number)
+        comments = Comment.objects.filter(post=self.object.id).filter(status='accept')
+        paginator = Paginator(comments, 2)
+        page_obj = paginator.get_page(self.request.GET.get('page'))
 
-    context = {'post': post,
-               'menu': menu,
-               'page_obj': page_obj,
-               'comments': comments}
+        context['page_obj'] = page_obj
+        context['comments'] = comments
+        context['form'] = CommentForm()
+        return context
 
-    if request.method == 'POST':
+    def get_object(self):
+        obj = super().get_object()
+        Post.objects.filter(slug=obj.slug).update(views=F('views') + 1)
+        return obj
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.post = post
+            comment.post = self.object
             comment.author = request.user
             comment.save()
-            context['form'] = form
-            return render(request, 'blog_app/post_detail.html', context=context)
-    else:
-        form = CommentForm()
-        context['form'] = form
-    return render(request, 'blog_app/post_detail.html', context=context)
+        return self.render_to_response(self.get_context_data(form=form))
 
 
-def posts_by_tag(request, tag_slug):
+class PostsByTag(ListView):
+    model = Post
+    template_name = 'blog_app/blog.html'
+    context_object_name = 'posts'
+    paginate_by = 4
 
-    posts = Post.objects.filter(tags__slug=tag_slug).filter(status='published')
+    def get_queryset(self):
+        return Post.objects.filter(tags__slug=self.kwargs['tag_slug']).filter(status='published')
 
-    paginator = Paginator(posts, 4)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'menu': menu,
-        'page_obj': page_obj,
-        'page_alias': 'blog'}
-
-    return render(request, 'blog_app/blog.html', context=context)
-
-
-def posts_by_category(request, category_slug):
-
-    posts = (Post.objects.select_related('author', 'category').prefetch_related('tags').
-             filter(category__slug=category_slug).filter(status='published'))
-
-    paginator = Paginator(posts, 4)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'menu': menu,
-        'page_obj': page_obj,
-        'page_alias': 'blog'}
-
-    return render(request, 'blog_app/blog.html', context=context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_alias'] = 'blog'
+        return context
 
 
-@login_required
-def add_post(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save(commit=True, author=request.user)
-            return redirect('blog')
-    else:
-        form = PostForm()
-    return render(request, 'blog_app/add_post.html', {'form': form, 'menu': menu, 'page_alias': 'add_post'})
+class PostsByCategory(ListView):
+    model = Post
+    template_name = 'blog_app/blog.html'
+    context_object_name = 'posts'
+    paginate_by = 4
+
+    def get_queryset(self):
+        return (Post.objects.select_related('author', 'category')
+                .prefetch_related('tags')
+                .filter(category__slug=self.kwargs['category_slug'])
+                .filter(status='published'))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_alias'] = 'blog'
+        return context
 
 
-def update_post(request, post_slug):
-    post = Post.objects.get(slug=post_slug)
+class AddPost(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog_app/add_post.html'
+    success_url = reverse_lazy('blog')
 
-    if request.method == 'POST':
-        form = PostForm(request.POST, request.FILES, instance=post)
-        if form.is_valid():
-            form.save()
-            return redirect('post_by_slug', post_slug=post_slug)
-    else:
-        form = PostForm(instance=post)
-    return render(request, 'blog_app/add_post.html', {'form': form, 'menu':menu})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_alias'] = 'add_post'
+        return context
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class UpdatePost(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'blog_app/add_post.html'
+    slug_url_kwarg = 'post_slug'
+
+    def get_success_url(self):
+        return reverse_lazy('post_by_slug', kwargs={'post_slug': self.object.slug})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        return context
