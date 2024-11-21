@@ -1,7 +1,6 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from .dataset import dataset
-from .models import Post
+from .models import Post, Category
 
 menu = [
     {"name": "Главная", "alias": "main"},
@@ -34,12 +33,11 @@ def blog(request):
 
     posts = Post.objects.all()
 
-    paginator = Paginator(posts, 3)
+    paginator = Paginator(posts, 4)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'posts': posts,
         'menu': menu,
         'page_alias': 'blog',
         'page_obj': page_obj,
@@ -54,3 +52,35 @@ def post_by_slug(request, post_slug):
                'menu': menu}
 
     return render(request, 'blog_app/post_detail.html', context=context)
+
+
+def posts_by_tag(request, tag_slug):
+
+    posts = Post.objects.filter(tags__slug=tag_slug)
+
+    paginator = Paginator(posts, 4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'menu': menu,
+        'page_obj': page_obj,
+        'page_alias': 'blog'}
+
+    return render(request, 'blog_app/blog.html', context=context)
+
+
+def posts_by_category(request, category_slug):
+
+    posts = Post.objects.filter(category__slug=category_slug)
+
+    paginator = Paginator(posts, 4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'menu': menu,
+        'page_obj': page_obj,
+        'page_alias': 'blog'}
+
+    return render(request, 'blog_app/blog.html', context=context)
